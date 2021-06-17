@@ -3,7 +3,7 @@ package edu.ecu.cs.pirateplaces
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class PiratePlacesListViewModel: ViewModel() {
+class ViewModel: ViewModel() {
     private val piratePlacesRepository = PiratePlacesRepository.get()
     val piratePlacesListLiveData = piratePlacesRepository.getPiratePlaces()
 
@@ -12,5 +12,6 @@ class PiratePlacesListViewModel: ViewModel() {
         piratePlacesRepository.addPiratePlace(place)
     }
 
-   // var coordinates = MutableLiveData<List<LatLonModel>>()
+    var coordinates = MutableLiveData<List<PiratePlace>>()
+
 }

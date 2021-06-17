@@ -11,6 +11,7 @@ class PiratePlacesDetailViewModel: ViewModel() {
 
     private val piratePlacesRepository = PiratePlacesRepository.get()
     private val pirateIdLiveData = MutableLiveData<UUID>()
+    var coordinates = MutableLiveData<List<PiratePlace>>()
 
     var piratePlaceLiveData: LiveData<PiratePlace?> =
         Transformations.switchMap(pirateIdLiveData) { piratePlaceId ->

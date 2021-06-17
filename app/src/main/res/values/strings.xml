@@ -11,7 +11,9 @@
     <string name="place_name_label">Place Name</string>
     <string name="place_name_hint">Enter the name of the Pirate Place here</string>
     <string name="visited_with_hint">Click here to select your guest</string>
+    <string name="visited_location_with_hint"> No Location Checked In!</string>
     <string name="place_guests_label">Guest</string>
+    <string name="place_location_label">Location Visited</string>
     <string name="new_pirate_place">New Pirate Place</string>
     <string name="place_details">Details</string>
     <string name="place_photo_button_description">Take photo of place</string>
@@ -21,6 +23,7 @@
     <string name="place_photo_image_description">Pirate place photo (set)</string>
     <string name="camera_message">Clicked camera button</string>
     <string name="share_place_text">Share Your Visit</string>
+    <string name="share_place_text_checkin">Check In</string>
     <string name="share_message_no_guest">I just visited %1$s on %2$s at %3$s!</string>
     <string name="share_message_with_guest">I just visited %1$s with %4$s on %2$s at %3$s!</string>
     <string name="share_place_subject">Just visited a PiratePlace!</string>

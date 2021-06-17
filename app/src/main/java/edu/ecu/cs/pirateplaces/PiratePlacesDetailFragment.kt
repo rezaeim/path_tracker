@@ -1,9 +1,11 @@
 package edu.ecu.cs.pirateplaces
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
@@ -13,12 +15,21 @@ import android.text.TextWatcher
 import android.text.format.DateFormat
 import android.view.*
 import android.widget.*
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import java.io.File
 import java.util.*
+
 
 private const val ARG_PLACE_ID = "place_id"
 private const val DIALOG_DATE = "DialogDate"
@@ -27,6 +38,8 @@ private const val REQUEST_DATE = 0
 private const val REQUEST_TIME = 1
 private const val REQUEST_CONTACT = 2
 private const val REQUEST_PHOTO = 3
+private val REQUEST_LOCATION_PERMISSION = 4
+
 
 class PiratePlacesDetailFragment:
     Fragment(), DatePickerFragment.Callbacks, TimePickerFragment.Callbacks {
@@ -41,6 +54,9 @@ class PiratePlacesDetailFragment:
     private lateinit var reportButton: Button
     private lateinit var photoFile: File
     private lateinit var photoUri: Uri
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationField: TextView
+    private lateinit var checkinButton: Button
 
     private val piratePlacesDetailViewModel : PiratePlacesDetailViewModel by lazy {
         ViewModelProviders.of(this).get(PiratePlacesDetailViewModel::class.java)
@@ -49,7 +65,10 @@ class PiratePlacesDetailFragment:
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         place = PiratePlace()
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,6 +84,8 @@ class PiratePlacesDetailFragment:
         photoButton = view.findViewById(R.id.place_camera) as ImageButton
         photoView = view.findViewById(R.id.place_photo) as ImageView
         reportButton = view.findViewById(R.id.share_place) as Button
+        locationField = view.findViewById(R.id.visited_location_with) as TextView
+        checkinButton = view.findViewById(R.id.share_location) as Button
 
         return view
     }
@@ -150,6 +171,8 @@ class PiratePlacesDetailFragment:
             }
         }
 
+
+
         photoButton.apply {
             val packageManager: PackageManager = requireActivity().packageManager
             val captureImage = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -177,7 +200,75 @@ class PiratePlacesDetailFragment:
                 startActivityForResult(captureImage, REQUEST_PHOTO)
             }
         }
+
+        checkinButton.apply {
+            //val packageManager: PackageManager = requireActivity().packageManager
+            setOnClickListener{
+                isPermissionGranted()
+                enableMyLocation()
+
+            }
+        }
     }
+
+    private fun isPermissionGranted() : Boolean {
+        return ContextCompat.checkSelfPermission(
+            requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray) {
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            if (grantResults.contains(PackageManager.PERMISSION_GRANTED)) {
+                enableMyLocation()
+            }
+        }
+    }
+
+    private fun enableMyLocation() {
+        if (isPermissionGranted()) {
+            if (ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return
+            }
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { location : Location? ->
+                    // Got last known location. In some rare situations this can be null.
+                    if (location != null) {
+
+                        place.latitude= location.latitude
+                        place.longitude= location.longitude
+                        place.hasLocation = true
+                        locationField.setText("${place.latitude}  ${place.longitude}")
+                        //enableMyLocation()
+                    }
+
+                }
+        }
+        else {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_LOCATION_PERMISSION
+            )
+        }
+    }
+
 
     override fun onStop() {
         super.onStop()
@@ -223,6 +314,7 @@ class PiratePlacesDetailFragment:
                     place.visitedWith = guest
                     piratePlacesDetailViewModel.savePiratePlace(place)
                     guestsField.text = guest
+
                 }
             }
 
@@ -240,11 +332,19 @@ class PiratePlacesDetailFragment:
         placeNameField.setText(place.name)
         guestsField.setHint(R.string.visited_with_hint)
         guestsField.setText(place.visitedWith)
+        if (place.latitude == 0.00) {
+            locationField.setHint(R.string.visited_location_with_hint)
+        }else {
+            locationField.setText(" ${place.latitude}  ${place.longitude}")
+        }
         dateButton.text = visitedDate
         timeButton.text = visitedTime
 
         updatePhotoView()
     }
+
+
+
 
     private fun updatePhotoView() {
         if (photoFile.exists()) {

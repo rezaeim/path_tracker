@@ -37,7 +37,6 @@
         <activity
             android:name=".PiratePlacesMapActivity"
             android:label="@string/title_activity_places_map" />
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

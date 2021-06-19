@@ -23,4 +23,5 @@ class ListItemViewModel(private val dateFormat: DateFormat, private val timeForm
     private val _name = MutableLiveData<String>()
     val name : LiveData<String>
         get() = _name
+
 }

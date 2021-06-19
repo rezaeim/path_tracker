@@ -1,41 +1,38 @@
 package edu.ecu.cs.pirateplaces
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.activity.viewModels
-import androidx.lifecycle.MutableLiveData
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import edu.ecu.cs.pirateplaces.databinding.ActivityPiratePlacesMapBinding
-import kotlin.properties.ReadOnlyProperty
 
 class PiratePlacesMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
-    private lateinit var binding: ActivityPiratePlacesMapBinding
-    private lateinit var place: PiratePlace
+    private val REQUEST_LOCATION_PERMISSION = 1
 
-    private val viewModel: ViewModel by viewModels()
-
+    private val mapViewModel : locViewModel by lazy {
+        ViewModelProviders.of(this).get(locViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        binding = ActivityPiratePlacesMapBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
+        setContentView(R.layout.activity_pirate_places_map)
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-
     }
 
     /**
@@ -48,37 +45,95 @@ class PiratePlacesMapActivity : AppCompatActivity(), OnMapReadyCallback {
      * installed Google Play services and returned to the app.
      */
 
+    override fun onMapReady(googleMap: GoogleMap){
 
-    override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        // Add a marker in Sydney and move the camera
-        //val sydney = LatLng(place.latitude, place.longitude)
-        //mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
-
-
-        viewModel.coordinates.observe(this, Observer {
-            // Clear previous markers:
-           // mMap?.clear()
-
-            if (place.hasLocation == true) {
-                // Place all current markers:
-              // it.forEach { latLng ->
-                 val lat = place.latitude
-                val lon = place.longitude
-                val latLng = LatLng(lat, lon)
-
-                // Add a marker in Sydney and move the camera
-                //val sydney = LatLng(-34.0, 151.0)
-                mMap.addMarker(MarkerOptions().position(latLng).title("Marker in Sydney"))
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng))
-
-
+        mapViewModel.piratePlacesListLiveData.observe (
+            this,
+            Observer {  piratePlace ->
+                piratePlace?.let {
+                    for(i in piratePlace.indices)
+                    {
+                        if (piratePlace[i].hasLocation)
+                        {
+                            val location = LatLng(piratePlace[i].latitude, piratePlace[i].longitude)
+                            mMap.addMarker(
+                                MarkerOptions()
+                                    .position(location)
+                                    .title(piratePlace[i].name)
+                                    .snippet(
+                                        if (piratePlace[i].visitedWith.isEmpty())
+                                        {
+                                            "No Guest"
+                                        }
+                                        else
+                                        {
+                                            piratePlace[i].visitedWith
+                                        }
+                                    )
+                            )
+                        }
+                    }
                 }
+            }
+        )
 
-        })
+        enableMyLocation()
 
 
     }
+
+
+
+    private fun isPermissionGranted() : Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun enableMyLocation() {
+        if (isPermissionGranted()) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return
+            }
+            mMap.isMyLocationEnabled = true
+        }
+        else {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf<String>(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_LOCATION_PERMISSION
+            )
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            if (grantResults.contains(PackageManager.PERMISSION_GRANTED)) {
+                enableMyLocation()
+            }
+        }
+    }
+
+
+
 }

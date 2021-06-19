@@ -207,6 +207,7 @@ class PiratePlacesDetailFragment:
                 isPermissionGranted()
                 enableMyLocation()
 
+
             }
         }
     }
@@ -227,25 +228,10 @@ class PiratePlacesDetailFragment:
         }
     }
 
+
     private fun enableMyLocation() {
         if (isPermissionGranted()) {
-            if (ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return
-            }
+
             fusedLocationClient.lastLocation
                 .addOnSuccessListener { location : Location? ->
                     // Got last known location. In some rare situations this can be null.
@@ -254,11 +240,18 @@ class PiratePlacesDetailFragment:
                         place.latitude= location.latitude
                         place.longitude= location.longitude
                         place.hasLocation = true
+                        // val lat: Double = location.getLatitude()
+                        //val longi: Double = location.getLongitude()
+                        // place.latitude = lat
+                        // piratePlacesDetailViewModel.savePiratePlace(place)
+                        // place.longitude = longi
+                        // piratePlacesDetailViewModel.savePiratePlace(place)
                         locationField.setText("${place.latitude}  ${place.longitude}")
                         //enableMyLocation()
                     }
 
                 }
+           // map.isMyLocationEnabled = true
         }
         else {
             ActivityCompat.requestPermissions(
@@ -267,8 +260,8 @@ class PiratePlacesDetailFragment:
                 REQUEST_LOCATION_PERMISSION
             )
         }
-    }
 
+    }
 
     override fun onStop() {
         super.onStop()

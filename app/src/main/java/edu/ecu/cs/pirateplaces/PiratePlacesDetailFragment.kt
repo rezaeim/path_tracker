@@ -246,7 +246,7 @@ class PiratePlacesDetailFragment:
                         // piratePlacesDetailViewModel.savePiratePlace(place)
                         // place.longitude = longi
                         // piratePlacesDetailViewModel.savePiratePlace(place)
-                        locationField.setText("${place.latitude}  ${place.longitude}")
+                        locationField.setText("${place.latitude} X  ${place.longitude} W")
                         //enableMyLocation()
                     }
 
@@ -328,7 +328,7 @@ class PiratePlacesDetailFragment:
         if (place.latitude == 0.00) {
             locationField.setHint(R.string.visited_location_with_hint)
         }else {
-            locationField.setText(" ${place.latitude}  ${place.longitude}")
+            locationField.setText(" ${place.latitude} X ${place.longitude} W")
         }
         dateButton.text = visitedDate
         timeButton.text = visitedTime

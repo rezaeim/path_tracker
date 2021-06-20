@@ -69,7 +69,8 @@ class PiratePlacesMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                         }
                                         else
                                         {
-                                            piratePlace[i].visitedWith
+                                            //piratePlace[i].visitedWith
+                                             "Visited with ${piratePlace[i].visitedWith} at ${piratePlace[i].latitude} X, ${piratePlace[i].longitude} W"
                                         }
                                     )
                             )

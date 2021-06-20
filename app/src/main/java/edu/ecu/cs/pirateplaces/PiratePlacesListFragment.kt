@@ -108,9 +108,10 @@ class PiratePlacesListFragment: Fragment() {
             RecyclerView.ViewHolder(binding.root), View.OnClickListener {
 
         private lateinit var place: PiratePlace
-        private var visitedWithTextView: TextView = itemView.findViewById(R.id.visited_with)
+        //private var visitedWithTextView: TextView = itemView.findViewById(R.id.visited_with)
         private var dateTextView: TextView = itemView.findViewById(R.id.date_visited)
         private var timeTextView: TextView = itemView.findViewById(R.id.time_visited)
+
         private val viewModel = ListItemViewModel(
             DateFormat.getMediumDateFormat(requireContext()),
             DateFormat.getTimeFormat(requireContext())
@@ -125,13 +126,13 @@ class PiratePlacesListFragment: Fragment() {
             this.place = place
             viewModel.place = place
 
-            visitedWithTextView.text = place.visitedWith
+         //   visitedWithTextView.text = place.visitedWith
 
             val dateString = DateFormat.getMediumDateFormat(requireContext()).format(place.lastVisited)
             val timeString = DateFormat.getTimeFormat(requireContext()).format(place.lastVisited)
 
-            dateTextView.text = dateString
-            timeTextView.text = timeString
+           // dateTextView.text = dateString
+            //timeTextView.text = timeString
         }
 
         override fun onClick(v: View) {
